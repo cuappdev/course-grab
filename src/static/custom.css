@@ -1,64 +1,80 @@
-body {
-    font-family: 'Montserrat', sans-serif;
-    background:
-            linear-gradient(
-                    rgba(0, 0, 0, 0.5),
-                    rgba(0, 0, 0, 0.5)
-            ),
-            url(/static/images/mcgraw.jpg);
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-attachment: fixed;
+html {
+    height: 100%;
 }
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    height: 100%;
+    position: relative;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
 .navbar {
     margin-bottom: 0;
 }
 .navbar-inverse {
     border: 0;
-    color: white;
+    color: black;
 }
+
+.navbar-inverse .navbar-nav li a {
+    font-weight: 500;
+    color: #EEE;
+}
+
 .navbar-inverse .navbar-nav li a:hover {
-    background: #2E2F31;
+    opacity: 0.8;
 }
+
 .jumbotron {
-    text-align: center;
+    text-align: left;
     background-color: transparent;
     margin-bottom: 0px;
-    padding-top: 16px;
+    padding: 0 !important;
+    margin-left: 0px;
+    font-weight: 300;
+    font-size: 18px;
 }
 .jumbotron p {
-    color: white;
+    color: black;
 }
 
 .jumbotron h1 {
-    color: white;
+    color: black;
 }
 .btn-primary {
-    color: #fff;
-    background-color: transparent;
-    border-color: white;
+    color: white;
+    background-color: #B33F3B;
+    border: none;
     margin-bottom: 5px;
 }
 .btn-primary:hover {
-    color: #2E2F31;
-    background-color: white;
-    border-color: white;
+    opacity: 0.8;
+    color: white;
+    background-color: #B33F3B;
+    border-color: none;
+    margin-bottom: 5px;
 }
 .tracking {
-    /*background: #2E2F31;*/
-    /*color: white;*/
-    background: rgba(0, 0, 0, 0.25);
-    color: white;
-}
-
-.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-    background-color: rgba(0, 0, 0, 0.20);
+    color: black;
 }
 
 .footer {
+    bottom: 0;
+    background-color: #222 !important;
+    color: #EEE;
     margin-bottom: 0;
-    color: white;
+    position: absolute;
+    width: 100%;
+
+}
+
+.footer p {
+    padding: 10px 0;
+    margin-bottom: 0;
 }
 
 navbar-collapse.collapse {
@@ -94,13 +110,19 @@ input[type="number"] {
 
 .flash-alert {
     display: inline-block;
-    margin: 0;
-    padding: 0px 15px 0px 15px;
-    font-size: 20px;
+    line-height: 1.4;
+    margin: 10px 0;
+    padding: 10px 20px;
 }
 
 .invis-flash-alert {
+    padding: 0;
+    margin: 0;
     background-color: transparent;
     border-color: transparent;
     color: transparent;    
+}
+
+.table thead>tr>th, .table tbody>tr>th, .table tfoot>tr>th, .table thead>tr>td, .table tbody>tr>td, .table tfoot>tr>td {
+    vertical-align: middle;
 }

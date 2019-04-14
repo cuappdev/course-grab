@@ -1,10 +1,8 @@
 {% extends "layout.html" %}
-
 {% block content %}
 
 
 <div class="jumbotron lander">
-
     <!-- Display flashed messages -->
     {% with msgs = get_flashed_messages() %}
         {% if msgs %}
@@ -22,9 +20,11 @@
     {# End flash display#}
 
     <div class="container">
-        <h1>Cornell CourseGrab</h1>
-        <p>Trying to get into a class that's already full?</p>
-        <p>Enter the IDs of any courses you want to enroll in, and we'll notify you as soon as there's an empty spot!</p>
+        <p>
+            Trying to get into a class that's already full?
+            <br>
+            Enter the IDs of any courses you want to enroll in, and we'll notify you as soon as there's an empty spot!
+        </p>
         <form class="form-inline" role="form" action="submitted" method="post">
             <div class="form-group" style=" margin-bottom: 8px">
                 <!-- limit numbers to the max int type in order to prevent overflowing the database -->
@@ -34,13 +34,17 @@
         </form>
         
         <p id="disclaimer">
-            Don't know the ID of your course? <br>Find it on the
-            <a href='https://classes.cornell.edu' rel="noopener noreferrer nofollow" target="_blank">class roster.</a>
+            Don't know the ID of your course?
+            <br>
+            Find it on the <a href='https://classes.cornell.edu' rel="noopener noreferrer nofollow" target="_blank">class roster.</a>
         </p>
     </div>
 </div>
+
+<hr />
+
 <div class="container tracking">
-    <h2>Courses You're Tracking</h2>
+    <h2>Currently Tracked Courses</h2>
     <table class="table table-hover">
         <tbody>
             {% if "access_token" in session %}

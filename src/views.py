@@ -2,19 +2,19 @@
 Routes and views for the Flask application.
 """
 
-from flask import render_template, request, session, redirect, url_for, flash
-from urllib2 import Request, urlopen, URLError
 import json
-import bs4
-import requests
-from CourseGrab import app as application
-from CourseGrab.models.db.sql_client import Client
-from CourseGrab import google
+from urllib2 import Request, urlopen, URLError
 
+import bs4
+from flask import render_template, request, session, redirect, url_for, flash
+import requests
+
+from src import app as application
+from src.models.db.sql_client import Client
+from src import google
 
 @application.route('/')
 def index():
-    courses = None
     access_token = session.get('access_token')
     course_list = []
     if access_token is not None:
@@ -31,7 +31,7 @@ def index():
 
 @application.route('/sign_in')
 def sign_in():
-    callback = url_for('authorized', _external = True)
+    callback = url_for('authorized', _external=True)
     return google.authorize(callback=callback)
 
 
@@ -96,9 +96,9 @@ def course_status_api(course_num):
 
 def get_user_dict():
     access_token = session.get('access_token')
-    if (access_token is None):
+    if access_token is None:
         callback = url_for('authorized', _external=True)
-        return google.authorize(callback = callback)
+        return google.authorize(callback=callback)
     access_token = access_token[0]
     headers = {'Authorization': 'OAuth ' + access_token}
     req = Request('https://www.googleapis.com/oauth2/v1/userinfo',

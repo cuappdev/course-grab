@@ -1,7 +1,7 @@
 import sys
 import requests
 import bs4
-from CourseGrab.models.db.sql_client import Client
+from src.models.db.sql_client import Client
 
 
 """
