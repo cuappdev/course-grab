@@ -21,4 +21,5 @@ RUN pip install -r requirements.txt
 COPY . .
 
 EXPOSE 5000 
-CMD python app.py
+CMD sh start_server.sh
+# CMD python app.py

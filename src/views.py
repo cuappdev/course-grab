@@ -3,6 +3,7 @@ Routes and views for the Flask application.
 """
 
 import json
+from os import environ
 from urllib2 import Request, urlopen, URLError
 
 import bs4
@@ -13,6 +14,11 @@ from src import app as application
 from src.models.db.sql_client import Client
 from src import google
 
+def _url_for(endpoint):
+    if environ.get('ENV') == 'PRODUCTION':
+        return url_for(endpoint, _scheme='https', _external=True)
+    return url_for(endpoint, _external=True)
+
 @application.route('/')
 def index():
     access_token = session.get('access_token')
@@ -21,18 +27,16 @@ def index():
         try:
             user_dict = get_user_dict()
         except Exception:
-            callback = url_for('authorized', _external = True)
-            return google.authorize(callback=callback)
+            return google.authorize(callback=_url_for('authorized'))
         user_id = user_dict["id"]
         client = Client()
         course_list = client.get_courses(user_id)
-    return render_template('index.html', course_list = course_list)
+    return render_template('index.html', course_list=course_list)
 
 
 @application.route('/sign_in')
 def sign_in():
-    callback = url_for('authorized', _external=True)
-    return google.authorize(callback=callback)
+    return google.authorize(callback=_url_for('authorized'))
 
 
 @application.route('/oauth2callback')
@@ -45,7 +49,7 @@ def authorized(resp):
     user_email = user_dict["email"]
     client = Client()
     client.add_user(user_id, user_email)
-    return redirect(url_for('index'))
+    return redirect(_url_for('index'))
 
 
 @google.tokengetter
@@ -53,7 +57,7 @@ def get_access_token():
     return session.get('access_token')
 
 
-@application.route('/submitted', methods = ['POST'])
+@application.route('/submitted', methods=['POST'])
 def submit_request():
     if session.get('access_token') is None:
         flash("Please sign in first.")
@@ -67,10 +71,10 @@ def submit_request():
             client.connection.close()
         except UserWarning as err:
             flash(str(err))
-    return redirect(url_for('index'))
+    return redirect(_url_for('index'))
 
 
-@application.route('/remove/<int:course_num>', methods = ['POST'])
+@application.route('/remove/<int:course_num>', methods=['POST'])
 def remove(course_num):
     if session.get('access_token') is None:
         flash("Your session has expired. Please sign in again.")
@@ -79,17 +83,17 @@ def remove(course_num):
         user_id = user_dict["id"]
         client = Client()
         client.remove_course(user_id, course_num)
-    return redirect(url_for('index'))
+    return redirect(_url_for('index'))
 
 
 @application.route('/sign_out')
 def sign_out():
     # remove the token from the session if it's there
     session.pop('access_token', None)
-    return redirect(url_for('index'))
+    return redirect(_url_for('index'))
 
 
-@application.route('/api/<int:course_num>', methods = ['GET'])
+@application.route('/api/<int:course_num>', methods=['GET'])
 def course_status_api(course_num):
     return get_course_status(course_num)
 
@@ -97,8 +101,7 @@ def course_status_api(course_num):
 def get_user_dict():
     access_token = session.get('access_token')
     if access_token is None:
-        callback = url_for('authorized', _external=True)
-        return google.authorize(callback=callback)
+        return google.authorize(callback=_url_for('authorized'))
     access_token = access_token[0]
     headers = {'Authorization': 'OAuth ' + access_token}
     req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
@@ -119,7 +122,7 @@ def page_not_found(e):
 
 @application.errorhandler(500)
 def internal_server_error(e):
-    return "Looks like you ran into a bug! Turns out making a website is kind of hard. We will fix this someday but in the meantime, just <a href='https://coursegrab.me'>click here</a> to return to the main page. Refreshing the page almost always fixes the problem.", 500
+    return "Looks like you ran into a bug! Turns out making a website is kind of hard. We will fix this someday but in the meantime, just <a href='https://coursegrab.cornellappdev.com'>click here</a> to return to the main page. Refreshing the page almost always fixes the problem.", 500
 
 def get_semester():
     roster_page = "https://classes.cornell.edu"
