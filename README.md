@@ -4,15 +4,12 @@ Need to add a course but there are no empty slots? Instead of constantly checkin
 
 ## Environment Variables
 
-We recommended to use [`autoenv`](https://github.com/kennethreitz/autoenv).
-The required environment variables for this application are the following:
+We recommended to use [`direnv`](https://direnv.net).
+
+To get started, run the following:
 
 ```bash
-DB_SERVER=''
-DB_NAME=''
-DB_USERNAME=''
-DB_PASSWORD=''
-GOOGLE_CLIENT_SECRET=''
+cp envrc.template .envrc
 ```
 
 ## Information
