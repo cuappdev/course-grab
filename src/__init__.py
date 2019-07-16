@@ -10,7 +10,7 @@ from flask_oauth import OAuth
 
 app = Flask(__name__, static_folder='static')
 
-app.secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+app.secret_key = environ['SECRET_KEY']
 oauth = OAuth()
 
 google = oauth.remote_app(
