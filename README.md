@@ -10,10 +10,14 @@ To get started, run the following:
 
 ```bash
 cp envrc.template .envrc
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python app.py
 ```
 
 ## Information
 
-This project has been maintained by Cornell AppDev since Spring 2018.
+This project has been maintained by Cornell AppDev since Spring 2019.
 
-Originally built for BigRed//Hacks 2016 by Chase Thomas and Ning Ning Sun. Visit the original repository [here](https://github.com/nnsun/CourseGrab)
+Originally built for BigRed//Hacks 2016 by Chase Thomas and Ning Ning Sun. Visit the original repository [here](https://github.com/nnsun/CourseGrab).
