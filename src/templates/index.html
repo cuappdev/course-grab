@@ -47,7 +47,7 @@
     <h2>Currently Tracked Courses</h2>
     <table class="table table-hover">
         <tbody>
-            {% if "access_token" in session %}
+            {% if "credentials" in session %}
                 {% if course_list|length == 0 %}
                     <tr>
                         <td>You're not tracking any courses! Add courses using the box above, and they'll appear in this table.</td>

@@ -2,159 +2,162 @@
 Routes and views for the Flask application.
 """
 
+import bs4
+import datetime
+import google.oauth2.credentials
+import google_auth_oauthlib.flow
+from flask import render_template, request, session, redirect, url_for, flash
 import json
 from os import environ
-from urllib2 import Request, urlopen, URLError
-
-import bs4
-from flask import render_template, request, session, redirect, url_for, flash
 import requests
 
-from src import app as application
-from src.models.db.sql_client import Client
-from src import google
+from src import app
+
+BACKEND_URL = environ.get("BACKEND_URL")
+
+CLIENT_SECRETS_FILE = environ.get("GOOGLE_SECRETS_FILE")
+SCOPES = [
+    "openid",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/userinfo.profile",
+]
+
 
 def _url_for(endpoint):
-    if environ.get('ENV') == 'PRODUCTION':
-        return url_for(endpoint, _scheme='https', _external=True)
+    if environ.get("ENV") == "PRODUCTION":
+        return url_for(endpoint, _scheme="https", _external=True)
     return url_for(endpoint, _external=True)
 
-@application.route('/')
+
+def create_auth_header():
+    credentials = session.get("credentials")
+    if credentials:
+        if credentials["session_expiration"] <= round(
+            datetime.datetime.now().timestamp()
+        ):
+            res = requests.post(
+                "/api/session/update/",
+                headers={"Authorization": "Bearer " + credentials["update_token"]},
+            )
+            serialized_session = res.json()
+            session["credentials"] = serialized_session["data"]
+        return {"Authorization": "Bearer " + credentials["session_token"]}
+    else:
+        flash("Please sign in.")
+
+
+@app.route("/")
 def index():
-    access_token = session.get('access_token')
+    credentials = session.get("credentials")
     course_list = []
-    if access_token is not None:
-        try:
-            user_dict = get_user_dict()
-        except Exception:
-            return google.authorize(callback=_url_for('authorized'))
-        user_id = user_dict["id"]
-        client = Client()
-        course_list = client.get_courses(user_id)
-    return render_template('index.html', course_list=course_list)
+    if credentials:
+        r = requests.get(
+            BACKEND_URL + "/api/users/tracking/", headers=create_auth_header()
+        )
+        for section in r.json()["data"]:
+            title = "{} {}: {}".format(
+                section["subject_code"], section["course_num"], section["title"]
+            )
+            course_list.append((section["catalog_num"], title, section["section"]))
+    return render_template("index.html", course_list=course_list)
 
 
-@application.route('/sign_in')
+@app.route("/sign_in")
 def sign_in():
-    return google.authorize(callback=_url_for('authorized'))
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE, scopes=SCOPES
+    )
+
+    flow.redirect_uri = _url_for("oauth2callback")
+
+    authorization_url, state = flow.authorization_url(
+        access_type="offline", include_granted_scopes="true"
+    )
+
+    session["state"] = state
+
+    return redirect(authorization_url)
 
 
-@application.route('/oauth2callback')
-@google.authorized_handler
-def authorized(resp):
-    access_token = resp['access_token']
-    session['access_token'] = access_token, ''
-    user_dict = get_user_dict()
-    user_id = user_dict["id"]
-    user_email = user_dict["email"]
-    client = Client()
-    client.add_user(user_id, user_email)
-    return redirect(_url_for('index'))
+@app.route("/oauth2callback")
+def oauth2callback():
+    state = session["state"]
+
+    flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+        CLIENT_SECRETS_FILE, scopes=SCOPES, state=state
+    )
+    flow.redirect_uri = _url_for("oauth2callback")
+
+    authorization_response = request.url
+    flow.fetch_token(authorization_response=authorization_response)
+
+    id_token = flow.credentials.id_token
+    res = requests.post(
+        BACKEND_URL + "/api/session/initialize/", json={"token": id_token}
+    )
+    serialized_session = res.json()
+    if serialized_session["success"]:
+        session["credentials"] = serialized_session["data"]
+        return redirect(_url_for("index"))
+    else:
+        flash(serialized_session["data"]["errors"][0])
 
 
-@google.tokengetter
-def get_access_token():
-    return session.get('access_token')
-
-
-@application.route('/submitted', methods=['POST'])
+@app.route("/submitted", methods=["POST"])
 def submit_request():
-    if session.get('access_token') is None:
+    if session.get("credentials") is None:
         flash("Please sign in first.")
     else:
-        user_dict = get_user_dict()
-        user_id = user_dict["id"]
-        course_code = request.form["course_number"]
-        client = Client()
-        try:
-            client.submit_request(user_id, course_code)
-            client.connection.close()
-        except UserWarning as err:
-            flash(str(err))
-    return redirect(_url_for('index'))
+        r = requests.get(
+            BACKEND_URL + "/api/users/tracking/", headers=create_auth_header()
+        )
+        if len(r.json()["data"]) == 3:
+            flash("You cannot track more than three courses at a time.")
+        else:
+            course_code = request.form["course_number"]
+            res = requests.post(
+                BACKEND_URL + "/api/sections/track/",
+                json={"course_id": course_code},
+                headers=create_auth_header(),
+            )
+            if not res.json()["success"]:
+                flash(res.json()["data"]["errors"][0])
+    return redirect(_url_for("index"))
 
 
-@application.route('/remove/<int:course_num>', methods=['POST'])
+@app.route("/remove/<int:course_num>", methods=["POST"])
 def remove(course_num):
-    if session.get('access_token') is None:
+    if session.get("credentials") is None:
         flash("Your session has expired. Please sign in again.")
     else:
-        user_dict = get_user_dict()
-        user_id = user_dict["id"]
-        client = Client()
-        client.remove_course(user_id, course_num)
-    return redirect(_url_for('index'))
+        res = requests.post(
+            BACKEND_URL + "/api/sections/untrack/",
+            json={"course_id": course_num},
+            headers=create_auth_header(),
+        )
+    return redirect(_url_for("index"))
 
 
-@application.route('/sign_out')
+@app.route("/sign_out")
 def sign_out():
-    # remove the token from the session if it's there
-    session.pop('access_token', None)
-    return redirect(_url_for('index'))
+    if "credentials" in session:
+        del session["credentials"]
+    return redirect(_url_for("index"))
 
 
-@application.route('/api/<int:course_num>', methods=['GET'])
-def course_status_api(course_num):
-    return get_course_status(course_num)
-
-
-def get_user_dict():
-    access_token = session.get('access_token')
-    if access_token is None:
-        return google.authorize(callback=_url_for('authorized'))
-    access_token = access_token[0]
-    headers = {'Authorization': 'OAuth ' + access_token}
-    req = Request('https://www.googleapis.com/oauth2/v1/userinfo',
-                  None, headers)
-    res = urlopen(req)
-    return json.loads(res.read())
-
-
-@application.errorhandler(400)
+@app.errorhandler(400)
 def bad_request(e):
     return "400 error", 400
 
 
-@application.errorhandler(404)
+@app.errorhandler(404)
 def page_not_found(e):
     return "404 error", 404
 
 
-@application.errorhandler(500)
+@app.errorhandler(500)
 def internal_server_error(e):
-    return "Looks like you ran into a bug! Turns out making a website is kind of hard. We will fix this someday but in the meantime, just <a href='https://coursegrab.cornellappdev.com'>click here</a> to return to the main page. Refreshing the page almost always fixes the problem.", 500
-
-def get_semester():
-    roster_page = "https://classes.cornell.edu"
-    roster_request = requests.get(roster_page)
-    roster_request.raise_for_status()
-    split_url = roster_request.url.split('/')
-    if split_url[-1] == '':
-        return split_url[-2]
-    else:
-        return split_url[-1]
-
-def get_course_status(course_num):
-    client = Client()
-    subject = client.get_course_subject(course_num)
-    if subject is None:
-        return None
-    semester = get_semester()
-    subject_url = "http://classes.cornell.edu/browse/roster/" + semester + "/subject/" + subject
-    subject_page = requests.get(subject_url)
-    subject_page.raise_for_status()
-    subject_bs4 = bs4.BeautifulSoup(subject_page.text, "html.parser")
-    course_code_tags = subject_bs4.find_all("strong", class_="tooltip-iws")
-    for tag in course_code_tags:
-        course_code = int(tag.getText().strip())
-        if course_num == course_code:
-            section = tag.parent.parent.parent
-            status = section.find_all('li', class_ = "open-status")[0].i["class"][-1]
-            if "open-status-open" in status:
-                return "open"
-            if "open-status-closed" in status:
-                return "closed"
-            if "open-status-warning" in status:
-                return "waitlist"
-            if "open-status-archive" in status:
-                return "archive"
+    return (
+        "Looks like you ran into a bug! Turns out making a website is kind of hard. We will fix this someday but in the meantime, just <a href='https://coursegrab.cornellappdev.com'>click here</a> to return to the main page. Refreshing the page almost always fixes the problem.",
+        500,
+    )

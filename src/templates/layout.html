@@ -21,7 +21,7 @@
                 </li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                {% if "access_token" in session %}
+                {% if "credentials" in session %}
                     <li><a href="{{ url_for('sign_out') }}">Sign Out</a></li>
                 {% else %}
                     <li><a href="{{ url_for('sign_in') }}">Sign In</a></li>
