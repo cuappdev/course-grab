@@ -1,17 +1,48 @@
 ﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:fb="http://ogp.me/ns/fb#">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:fb="http://ogp.me/ns/fb#">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cornell CourseGrab</title>
     <link rel="stylesheet" type="text/css" href="../static/content/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="../static/content/site.css" />
-    <link rel="stylesheet" type="text/css" href="../static/custom.css"/>
+    <link rel="stylesheet" type="text/css" href="../static/custom.css" />
     <link href='https://fonts.googleapis.com/css?family=Montserrat:400,700' rel='stylesheet' type='text/css'>
     <script src="../static/scripts/modernizr-2.6.2.js"></script>
-    <meta property="og:image" content="../static/images/preview1.png"/>
+    <meta property="og:image" content="../static/images/preview1.png" />
 </head>
+
+<style>
+    .download-links {
+        display: inline-block;
+        height: 100%
+    }
+    
+    .download-col {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .download-button {
+        width: 200px;
+        margin: 4px 4px;
+    }
+    
+    @media screen and (max-width: 1200px) {
+        .download-links {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .download-col {
+            width: 50%;
+        }
+    }
+</style>
+
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
@@ -22,9 +53,9 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if "access_token" in session %}
-                    <li><a href="{{ url_for('sign_out') }}">Sign Out</a></li>
+                <li><a href="{{ url_for('sign_out') }}">Sign Out</a></li>
                 {% else %}
-                    <li><a href="{{ url_for('sign_in') }}">Sign In</a></li>
+                <li><a href="{{ url_for('sign_in') }}">Sign In</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -33,12 +64,34 @@
         {% block content %}{% endblock %}
     </div>
 
+    <div class="container body-content" style="position: absolute; bottom: 56px; left:0px; right:0px; margin-bottom: 12px">
+        <div class="row" width="100%">
+            <div class="col-lg-1" style="min-width: 80% !important;" style="margin: 4px 4px">
+                <img src="../static/images/banner.svg" width="100%" style="margin: 4px 4px"></img>
+            </div>
+            <div class="col-lg-1" style="min-width: 200px;" style="margin: 4px 4px">
+                <div class="download-links" style="width:100%">
+                    <div class="download-col">
+                        <a href="https://play.google.com/store/apps/details?id=com.cornellappdev.coursegrab">
+                            <img src="../static/images/dl_android.svg" class="download-button"></img>
+                        </a>
+                    </div>
+                    <div class="download-col">
+                        <a href="https://paper.dropbox.com/ep/redirect/external-link?url=https%3A%2F%2Fapps.apple.com%2Ftt%2Fapp%2Fcoursegrab%2Fid1510823691%3Fign-mpt%3Duo%253D2&hmac=NbCOSsK22SEgad3q5rP0%2BYnNRK9qMNZu9C4WzmFDjKs%3D">
+                            <img src="../static/images/dl_ios.svg" class="download-button"></img>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="footer">
-      <div class="container">
-        <p>
-            Originally created by Ning Ning Sun and Chase Thomas in 2016. Currently maintained by <a href="https://cornellappdev.com">Cornell AppDev.</a>
-        </p>
-      </div>
+        <div class="container">
+            <p>
+                Originally created by Ning Ning Sun and Chase Thomas in 2016. Currently maintained by <a href="https://cornellappdev.com">Cornell AppDev.</a>
+            </p>
+        </div>
     </footer>
 
     <script src="../static/scripts/jquery-1.10.2.js"></script>
@@ -47,4 +100,5 @@
     {% block scripts %}{% endblock %}
 
 </body>
+
 </html>

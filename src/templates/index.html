@@ -1,29 +1,22 @@
-{% extends "layout.html" %}
-{% block content %}
+{% extends "layout.html" %} {% block content %}
 
 
 <div class="jumbotron lander">
     <!-- Display flashed messages -->
-    {% with msgs = get_flashed_messages() %}
-        {% if msgs %}
-            {%- for msg in msgs %}
-                <div class="alert alert-info flash-alert">
-                    {{msg}}
-                </div>
-            {% endfor -%}
-        {% else %}
-            <div class="alert alert-info flash-alert invis-flash-alert">
-                Placeholder
-            </div>
-        {% endif %}
-    {% endwith %}
-    {# End flash display#}
+    {% with msgs = get_flashed_messages() %} {% if msgs %} {%- for msg in msgs %}
+    <div class="alert alert-info flash-alert">
+        {{msg}}
+    </div>
+    {% endfor -%} {% else %}
+    <div class="alert alert-info flash-alert invis-flash-alert">
+        Placeholder
+    </div>
+    {% endif %} {% endwith %} {# End flash display#}
 
     <div class="container">
         <p>
             Trying to get into a class that's already full?
-            <br>
-            Enter the IDs of any courses you want to enroll in, and we'll notify you as soon as there's an empty spot!
+            <br> Enter the IDs of any courses you want to enroll in, and we'll notify you as soon as there's an empty spot!
         </p>
         <form class="form-inline" role="form" action="submitted" method="post">
             <div class="form-group" style=" margin-bottom: 8px">
@@ -32,11 +25,10 @@
             </div>
             <button type="submit" class="btn btn-primary">Add Course</button>
         </form>
-        
+
         <p id="disclaimer">
             Don't know the ID of your course?
-            <br>
-            Find it on the <a href='https://classes.cornell.edu' rel="noopener noreferrer nofollow" target="_blank">class roster.</a>
+            <br> Find it on the <a href='https://classes.cornell.edu' rel="noopener noreferrer nofollow" target="_blank">class roster.</a>
         </p>
     </div>
 </div>
@@ -47,32 +39,28 @@
     <h2>Currently Tracked Courses</h2>
     <table class="table table-hover">
         <tbody>
-            {% if "access_token" in session %}
-                {% if course_list|length == 0 %}
-                    <tr>
-                        <td>You're not tracking any courses! Add courses using the box above, and they'll appear in this table.</td>
-                    </tr>
-                {% else %}
-                    {% for course in course_list %}
-                        <tr>
-                            <td>{{course.0}}</td>
-                            <td>{{course.1}}</td>
-                            <td>{{course.2}}</td>
-                            <td>
-                                <form action='remove/{{course.0}}' method="post">
-                                    <button type="submit" class="btn btn-default">
+            {% if "access_token" in session %} {% if course_list|length == 0 %}
+            <tr>
+                <td>You're not tracking any courses! Add courses using the box above, and they'll appear in this table.</td>
+            </tr>
+            {% else %} {% for course in course_list %}
+            <tr>
+                <td>{{course.0}}</td>
+                <td>{{course.1}}</td>
+                <td>{{course.2}}</td>
+                <td>
+                    <form action='remove/{{course.0}}' method="post">
+                        <button type="submit" class="btn btn-default">
                                         Remove
                                     </button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                {% endif %}
-            {% else %}
+                    </form>
+                </td>
+            </tr>
+            {% endfor %} {% endif %} {% else %}
             <tr>
                 <td>Sign in to start adding courses!</td>
             </tr>
-        {% endif %}
+            {% endif %}
         </tbody>
     </table>
 </div>
