@@ -16,6 +16,8 @@ pip install -r requirements.txt
 python app.py
 ```
 
+Note: if `python -m venv venv` doesn't work for you, try `python -m virtualenv venv`. 
+
 ## Information
 
 This project has been maintained by Cornell AppDev since Spring 2019.
