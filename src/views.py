@@ -10,9 +10,9 @@ import bs4
 from flask import render_template, request, session, redirect, url_for, flash
 import requests
 
-from src import app as application
+from __init__ import app as application
+from __init__ import google
 from src.models.db.sql_client import Client
-from src import google
 
 def _url_for(endpoint):
     if environ.get('ENV') == 'PRODUCTION':

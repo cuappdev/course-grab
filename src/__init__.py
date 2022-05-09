@@ -1,6 +1,7 @@
 """
 The Flask application package.
 """
+import src.views
 import random
 import string
 from os import environ

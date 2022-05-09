@@ -46,8 +46,8 @@ def main():
             command = "SELECT CourseNum FROM Courses WHERE CourseNum = ?"
             client.cursor.execute(command, course_num)
             if client.cursor.fetchone() is None:
-                catalog_num = int("".join([x for x in tag.next_sibling.getText() if x.isdigit()]))
-                title = tag.parent.parent.parent.parent.parent.parent.find_all("div", class_ = "title-coursedescr")[0].getText()
+                catalog_num = int("".join([x for x in tag.findNext("span", recursive=False)[0].getText() if x.isdigit()]))
+                title = tag.parent.parent.parent.parent.parent.parent.parent.find_all("div", class_ = "title-coursedescr")[0].getText()
                 section = str(tag.parent.parent.parent["aria-label"])[section_offset:]
                 command = "INSERT INTO Courses (CourseNum, OpenStatus, SubjectCode, CatalogNum, Title, Section) VALUES (?, 0, ?, ?, ?, ?)"
                 client.cursor.execute(command, [course_num, subject_code, catalog_num, title, section])
